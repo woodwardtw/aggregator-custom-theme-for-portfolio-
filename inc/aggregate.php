@@ -141,14 +141,14 @@ THINGS THAT INVOLVE GETTING THE DATA FROM AFAR
 function getAggData($id){
 	$siteURL = verifySlash(get_post_meta( $id, 'site-url', true ));	
 	$response = wp_remote_get($siteURL . 'wp-json/' );	
-	//var_dump($response['response']);
-	if($response['response']['code'] == 404){ //on failure add tag 404
-		missingResponse($id);
+	if(is_wp_error( $response ) || $response['response']['code'] != 200){ //on failure add tag 404
+		missingResponse($id, '404');
 	} else {
 	$data = json_decode( wp_remote_retrieve_body( $response ) ); //on success update post
 		$syndicatedDescription = $data->description;			
 		updateTitle($id,$data);	  		  	
 		updateTags($id,$data);
+		missingResponse($id, '');
 	}
 	totalPosts($id);
 	totalPages($id);
@@ -184,10 +184,9 @@ function updateTags($id,$data){
 }
 
 //adds 404 tag to sites that don't respond for filtering purposes (keep the post for archival purposes but remove from active listings via wp query)
-function missingResponse($id){
-	  		wp_set_post_tags($id, '404', true );
+function missingResponse($id, $status){
+	  	update_post_meta( $id, 'site-status', $status);
 }
-
 
 //makes sure that the agg site URL has a trailing slash
 function verifySlash($url){
@@ -204,8 +203,8 @@ function verifySlash($url){
 function totalPosts($id){
 	$siteURL = verifySlash(get_post_meta( $id, 'site-url', true ));	
 	$response = wp_remote_get($siteURL . 'wp-json/wp/v2/posts?per_page=1' );	
-	if($response == 404){ //on failure add tag 404
-		var_dump($response);
+	if(is_wp_error( $response ) || $response == 404){ //on failure add tag 404
+		missingResponse($id, '404');
 	} else {
 		$total = $response['headers']['x-wp-total'];
 		update_post_meta( $id, 'total-posts', $total);
@@ -216,11 +215,16 @@ function totalPosts($id){
 function totalPages($id){
 	$siteURL = verifySlash(get_post_meta( $id, 'site-url', true ));	
 	$response = wp_remote_get($siteURL . 'wp-json/wp/v2/pages?per_page=1' );	
-	if($response == 404){ //on failure add tag 404
-		var_dump($response);
+	if(is_wp_error( $response ) || $response == 404){ //on failure add tag 404
+		missingResponse($id, '404');
 	} else {
 		$total = $response['headers']['x-wp-total'];
 		update_post_meta( $id, 'total-pages', $total);
 	}
+}
 
+function aggSiteCategories($id){
+		$siteURL = verifySlash(get_post_meta( $id, 'site-url', true ));	
+		$response = wp_remote_get($siteURL . 'wp-json/wp/v2/categories?orderby=count&per_page=10' );
+		var_dump($response);	
 }
