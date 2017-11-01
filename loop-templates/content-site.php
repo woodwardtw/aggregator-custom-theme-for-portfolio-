@@ -23,6 +23,7 @@
 	<?php the_tags( 'Tags: ', ', ', '<br />' ); //output tags for site?> 
 	<?php echo get_the_category_list(); ?>
 		<?php the_content(); ?>
+		<?php aggSiteCategories($post->ID);?>
 		<div class="row"><!--show site content via api-->
 			<div id="posts" class="col-md-6">
 				<h2>Posts</h2>

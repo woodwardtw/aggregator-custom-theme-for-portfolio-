@@ -223,8 +223,19 @@ function totalPages($id){
 	}
 }
 
+
+//gets list of ten most common categories and links to them
 function aggSiteCategories($id){
-		$siteURL = verifySlash(get_post_meta( $id, 'site-url', true ));	
-		$response = wp_remote_get($siteURL . 'wp-json/wp/v2/categories?orderby=count&per_page=10' );
-		var_dump($response);	
+	$siteURL = verifySlash(get_post_meta( $id, 'site-url', true ));	
+	$response = wp_remote_get($siteURL . 'wp-json/wp/v2/categories?orderby=count&per_page=10' );
+	if(is_wp_error( $response ) || $response == 404){ //on failure add tag 404
+		//missingResponse($id, '404');
+	} else {
+		$categories = '';
+		$data = json_decode( wp_remote_retrieve_body( $response ) );
+		for ($i = 0; $i < 9; $i++ ){
+			$categories .= '<li><a href="'.$data[$i]->link.'">'.$data[$i]->name.'</a></li>';
+		}
+		echo '<ul>'.$categories.'</ul>';
+	}	
 }
