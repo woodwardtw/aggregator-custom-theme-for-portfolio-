@@ -131,7 +131,7 @@ add_action( 'pre_get_posts', 'wpa_cpt_tags' );
 /*
 **
 **
-THINGS THAT INVOLVE GETTING THE DATA FROM AFAR 
+THINGS THAT INVOLVE GETTING THE DATA FROM AFAR ---SINGLE SITES
 **
 **
 */
@@ -162,9 +162,9 @@ function updateTitle($id,$data){
 		    'ID'           => $id,
 		    'post_title'   => $data->name,
 		    'post_name' => '', //passes empty string to force regeneration of permalink based on title change
-		  		);
-				// Update the post into the database
-		wp_update_post( $the_post );
+		  		);				
+		wp_update_post( $the_post );// Update the post in the database
+		refreshPage();
 	}
 }
 
@@ -187,6 +187,7 @@ function updateTags($id,$data){
 function missingResponse($id, $status){
 	  	update_post_meta( $id, 'site-status', $status);
 }
+
 
 //makes sure that the agg site URL has a trailing slash
 function verifySlash($url){
@@ -211,6 +212,7 @@ function totalPosts($id){
 	}
 }
 
+
 //gets total pages and allows wp query vs value or a sort to show more posts up front
 function totalPages($id){
 	$siteURL = verifySlash(get_post_meta( $id, 'site-url', true ));	
@@ -227,15 +229,20 @@ function totalPages($id){
 //gets list of ten most common categories and links to them
 function aggSiteCategories($id){
 	$siteURL = verifySlash(get_post_meta( $id, 'site-url', true ));	
-	$response = wp_remote_get($siteURL . 'wp-json/wp/v2/categories?orderby=count&per_page=10' );
+	$response = wp_remote_get($siteURL . 'wp-json/wp/v2/categories?orderby=count&per_page=10&order=desc' );
 	if(is_wp_error( $response ) || $response == 404){ //on failure add tag 404
 		//missingResponse($id, '404');
 	} else {
 		$categories = '';
 		$data = json_decode( wp_remote_retrieve_body( $response ) );
-		for ($i = 0; $i < 9; $i++ ){
-			$categories .= '<li><a href="'.$data[$i]->link.'">'.$data[$i]->name.'</a></li>';
+		for ($i = 0; $i < sizeof($data); $i++ ){
+			$categories .= '<li><a href="'.$data[$i]->link.'">'.$data[$i]->name.' ('. $data[$i]->count .')</a></li>';
 		}
-		echo '<ul>'.$categories.'</ul>';
+		echo '<ul id="agg-categories">'.$categories.'</ul>';
 	}	
+}
+
+//refreshes page 
+function refreshPage(){
+   echo '<script>location.reload();</script>';
 }
