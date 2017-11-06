@@ -15,21 +15,21 @@ function create_site_cpt() {
 
 	$labels = array(
 		'name' => __( 'sites', 'Post Type General Name', 'textdomain' ),
-		'singular_name' => __( 'site', 'Post Type Singular Name', 'textdomain' ),
-		'menu_name' => __( 'sites', 'textdomain' ),
-		'name_admin_bar' => __( 'site', 'textdomain' ),
+		'singular_name' => __( 'Site', 'Post Type Singular Name', 'textdomain' ),
+		'menu_name' => __( 'Sites', 'textdomain' ),
+		'name_admin_bar' => __( 'Site', 'textdomain' ),
 		'archives' => __( 'Site Archives', 'textdomain' ),
 		'attributes' => __( 'Site Attributes', 'textdomain' ),
-		'parent_item_colon' => __( 'Parent site:', 'textdomain' ),
-		'all_items' => __( 'All sites', 'textdomain' ),
-		'add_new_item' => __( 'Add New site', 'textdomain' ),
+		'parent_item_colon' => __( 'Parent Site:', 'textdomain' ),
+		'all_items' => __( 'All Sites', 'textdomain' ),
+		'add_new_item' => __( 'Add New Site', 'textdomain' ),
 		'add_new' => __( 'Add New', 'textdomain' ),
-		'new_item' => __( 'New site', 'textdomain' ),
-		'edit_item' => __( 'Edit site', 'textdomain' ),
-		'update_item' => __( 'Update site', 'textdomain' ),
-		'view_item' => __( 'View site', 'textdomain' ),
-		'view_items' => __( 'View sites', 'textdomain' ),
-		'search_items' => __( 'Search sites', 'textdomain' ),
+		'new_item' => __( 'New Site', 'textdomain' ),
+		'edit_item' => __( 'Edit Site', 'textdomain' ),
+		'update_item' => __( 'Update Site', 'textdomain' ),
+		'view_item' => __( 'View Site', 'textdomain' ),
+		'view_items' => __( 'View Sites', 'textdomain' ),
+		'search_items' => __( 'Search Sites', 'textdomain' ),
 		'not_found' => __( 'Your site was not found', 'textdomain' ),
 		'not_found_in_trash' => __( 'Not found in Trash', 'textdomain' ),
 		'featured_image' => __( 'Featured Image', 'textdomain' ),
@@ -44,7 +44,7 @@ function create_site_cpt() {
 	);
 	$args = array(
 		'label' => __( 'site', 'textdomain' ),
-		'description' => __( 'Georgetown Sites', 'textdomain' ),
+		'description' => __( 'Student Sites', 'textdomain' ),
 		'labels' => $labels,
 		'menu_icon' => '',
 		'supports' => array('title', 'editor', 'excerpt', 'thumbnail', 'revisions', 'author', 'trackbacks', 'page-attributes', 'custom-fields', ),
@@ -62,15 +62,77 @@ function create_site_cpt() {
 		'show_in_rest' => true,
 		'publicly_queryable' => true,
 		'capability_type' => 'post',
-		'menu_icon' => 'dashicons-hammer',
+		'menu_icon' => 'dashicons-admin-users',
 	);
 	register_post_type( 'site', $args );
 
 }
 add_action( 'init', 'create_site_cpt', 0 );
 
+//CUSTOM POST TYPE FOR PROGRAMS
+function create_program_cpt() {
 
-//add custom meta box for site URL 
+	$labels = array(
+		'name' => __( 'Programs', 'Post Type General Name', 'textdomain' ),
+		'singular_name' => __( 'Program', 'Post Type Singular Name', 'textdomain' ),
+		'menu_name' => __( 'Programs', 'textdomain' ),
+		'name_admin_bar' => __( 'Site', 'textdomain' ),
+		'archives' => __( 'Program Archives', 'textdomain' ),
+		'attributes' => __( 'Program Attributes', 'textdomain' ),
+		'parent_item_colon' => __( 'Parent Program:', 'textdomain' ),
+		'all_items' => __( 'All Programs', 'textdomain' ),
+		'add_new_item' => __( 'Add New Site', 'textdomain' ),
+		'add_new' => __( 'Add New', 'textdomain' ),
+		'new_item' => __( 'New Program', 'textdomain' ),
+		'edit_item' => __( 'Edit Program', 'textdomain' ),
+		'update_item' => __( 'Update Program', 'textdomain' ),
+		'view_item' => __( 'View Program', 'textdomain' ),
+		'view_items' => __( 'View Programs', 'textdomain' ),
+		'search_items' => __( 'Search Programs', 'textdomain' ),
+		'not_found' => __( 'Your program was not found', 'textdomain' ),
+		'not_found_in_trash' => __( 'Not found in Trash', 'textdomain' ),
+		'featured_image' => __( 'Featured Image', 'textdomain' ),
+		'set_featured_image' => __( 'Set featured image', 'textdomain' ),
+		'remove_featured_image' => __( 'Remove featured image', 'textdomain' ),
+		'use_featured_image' => __( 'Use as featured image', 'textdomain' ),
+		'insert_into_item' => __( 'Insert into program', 'textdomain' ),
+		'uploaded_to_this_item' => __( 'Uploaded to this program', 'textdomain' ),
+		'items_list' => __( 'Programs list', 'textdomain' ),
+		'items_list_navigation' => __( 'programs list navigation', 'textdomain' ),
+		'filter_items_list' => __( 'Filter programs list', 'textdomain' ),
+	);
+	$args = array(
+		'label' => __( 'program', 'textdomain' ),
+		'description' => __( 'Program', 'textdomain' ),
+		'labels' => $labels,
+		'menu_icon' => '',
+		'supports' => array('title', 'editor', 'excerpt', 'thumbnail', 'revisions', 'author', 'trackbacks', 'page-attributes', 'custom-fields', ),
+        'taxonomies' => array('category','post_tag'),
+		'public' => true,
+		'show_ui' => true,
+		'show_in_menu' => true,
+		'menu_position' => 5,
+		'show_in_admin_bar' => true,
+		'show_in_nav_menus' => true,
+		'can_export' => true,
+		'has_archive' => true,
+		'hierarchical' => false,
+		'exclude_from_search' => false,
+		'show_in_rest' => true,
+		'publicly_queryable' => true,
+		'capability_type' => 'post',
+		'menu_icon' => 'dashicons-admin-multisite',
+	);
+	register_post_type( 'program', $args );
+
+}
+add_action( 'init', 'create_program_cpt', 0 );
+
+//END CUSTOM POST TYPE FOR PROGRAMS
+
+
+
+//add custom meta box for site URL for SITES POSTS
 
 function custom_meta_box_markup($object)
 {
@@ -119,7 +181,7 @@ add_action("save_post", "save_custom_meta_box", 10, 3);
 
 
 
-//add site custom post type to search results
+//add site custom post type to search results 
 function wpa_cpt_tags( $query ) {
     if ( $query->is_tag() && $query->is_main_query() ) {
         $query->set( 'post_type', array( 'post', 'site' ) );
@@ -185,7 +247,8 @@ function updateTags($id,$data){
 
 //adds 404 tag to sites that don't respond for filtering purposes (keep the post for archival purposes but remove from active listings via wp query)
 function missingResponse($id, $status){
-	  	update_post_meta( $id, 'site-status', $status);
+	  	//update_post_meta( $id, 'site-status', $status);
+	  	wp_set_post_tags( $id, $status, true );
 }
 
 
@@ -246,3 +309,13 @@ function aggSiteCategories($id){
 function refreshPage(){
    echo '<script>location.reload();</script>';
 }
+
+/*
+**
+**
+THINGS THAT INVOLVE GETTING THE DATA FROM AFAR --- PROGRAM LEVEL
+**
+**
+*/
+
+//hook into tags from sites custom post type and display under two headings include and exclude
