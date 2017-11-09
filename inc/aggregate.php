@@ -1,6 +1,6 @@
 <?php
 /**
- * georgetown site functions and definitions
+ * aggregate site functions and definitions
  *
  * 
  *
@@ -210,7 +210,7 @@ function getAggData($id){
 		$syndicatedDescription = $data->description;			
 		updateTitle($id,$data);	  		  	
 		updateTags($id,$data);
-		missingResponse($id, '');
+		missingResponse($id, 'no-plugin-data');
 	}
 	totalPosts($id);
 	totalPages($id);
@@ -305,7 +305,7 @@ function aggSiteCategories($id){
 	}	
 }
 
-//refreshes page 
+//refreshes page to make sure fixed data shows
 function refreshPage(){
    echo '<script>location.reload();</script>';
 }
@@ -319,3 +319,6 @@ THINGS THAT INVOLVE GETTING THE DATA FROM AFAR --- PROGRAM LEVEL
 */
 
 //hook into tags from sites custom post type and display under two headings include and exclude
+
+
+//screenshot attempt
