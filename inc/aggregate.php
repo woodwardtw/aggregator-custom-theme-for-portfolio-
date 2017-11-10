@@ -240,7 +240,7 @@ function updateTags($id,$data){
 		  	array_push($postTagsArray, $postTags[$i]->name);
 		}
 		if (array_diff($extra,$postTagsArray)>0) {
-		  		wp_set_post_tags($id, $tags, false );
+		  		wp_set_post_tags($id, $tags, true );
 		  	}	
 	 }
 }
