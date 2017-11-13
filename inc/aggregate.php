@@ -281,7 +281,7 @@ function totalPosts($id){
 		missingResponse($id, '404');
 	} else {
 		$total = $response['headers']['x-wp-total'];	
-		if ($total === true){
+		if ($total){
 			update_post_meta( $id, 'total-posts', $total);
 		}
 		//recent update date for posts
