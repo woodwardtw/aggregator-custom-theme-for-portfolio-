@@ -11,12 +11,14 @@
 <?php 
 	//check on screenshot if > -7 days then run it ******consider making a function w days and meta field options
 	$now = new DateTime("now");
-	$screenshotDate = new DateTime(get_post_meta($post->ID, 'screenshot-date', true));
-	$diff = $now->diff($screenshotDate);
+	$checkScreenshot = get_post_meta($post->ID, 'screenshot-date', true);
+	$screenshotDate = new DateTime($checkScreenshot);
+	$diff = $screenshotDate->diff($now);
 	$daysDiff = $diff->format('%R%a');
-	if ($daysDiff < -7) {	
+	if ($checkScreenshot === "" || $daysDiff > 7) {	
 		$url = realpath(__DIR__ . '/..'); //set explicit paths to bin etc.
 		require $url . '/inc/screenshot.php';
+		screenshotThumb($post->ID); //create 300x300 thumbnail
 	}
 ;?>
 

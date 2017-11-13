@@ -349,6 +349,19 @@ function showScreenshot($id){
 	} 
 }
 
+function screenshotThumb($id){
+	$remoteSite = get_post_meta( $id, 'site-url', true ); //the URL referenced in the post
+	$cleanUrl = preg_replace("(^https?://)", "", $remoteSite ); //remove http or https
+	$cleanUrl = str_replace('/', "_", $cleanUrl); //replace / with _
+	$imgPath = get_template_directory()  . '/screenshots/' . $cleanUrl . '.jpg';
+
+	$image = wp_get_image_editor( $imgPath );
+	if ( ! is_wp_error( $image ) ) {
+    	$image->resize( 300, 300, true );
+    	$image->save( get_template_directory()  . '/screenshots/' . $cleanUrl . '300x300.jpg');
+	}
+}
+
 
 /*
 //adds screenshot as featured image
