@@ -363,27 +363,41 @@ function screenshotThumb($id){
 }
 
 
-/*
-//adds screenshot as featured image
-function makeFeatured($id,$filename){
-	$wp_filetype = wp_check_filetype(basename($filename), null );
+function makeFeatured($id){
+	$remoteSite = get_post_meta( $id, 'site-url', true ); //the URL referenced in the post
+	$cleanUrl = preg_replace("(^https?://)", "", $remoteSite ); //remove http or https
+	$cleanUrl = str_replace('/', "_", $cleanUrl); //replace / with _
+	$img_url = get_template_directory()  . '/screenshots/' . $cleanUrl . '.jpg';
 
-	$attachment = array(
-	    'post_mime_type' => $wp_filetype['type'],
-	    'post_title' => $filename,
-	    'post_content' => '',
-	    'post_status' => 'inherit'
-	);
 
-	$attach_id = wp_insert_attachment( $attachment, $uploadfile );
+    $upload_dir = wp_upload_dir();
+    if (file_exists($img_url)) {
+    	$image_data = file_get_contents($img_url);
 
-	$imagenew = get_post( $attach_id );
-	$fullsizepath = get_attached_file( $imagenew->ID );
-	$attach_data = wp_generate_attachment_metadata( $attach_id, $fullsizepath );
-	wp_update_attachment_metadata( $attach_id, $attach_data );
+    
+    $filename = basename($img_url);
+    if(wp_mkdir_p($upload_dir['path']))     $file = $upload_dir['path'] . '/' . $filename;
+    else                                    $file = $upload_dir['basedir'] . '/' . $filename;
+    file_put_contents($file, $image_data);
+
+    $wp_filetype = wp_check_filetype($filename, null );
+    $attachment = array(
+        'post_mime_type' => $wp_filetype['type'],
+        'post_title' => sanitize_file_name($filename),
+        'post_content' => '',
+        'post_status' => 'inherit'
+    );
+    $attach_id = wp_insert_attachment( $attachment, $file, $id );
+    require_once(ABSPATH . 'wp-admin/includes/image.php');
+    $attach_data = wp_generate_attachment_metadata( $attach_id, $file );
+    $res1= wp_update_attachment_metadata( $attach_id, $attach_data );
+    $res2= set_post_thumbnail( $id, $attach_id );
+   
+    	unlink($img_url);
+    }
 }
 
-*/
+
 
 /*
 **

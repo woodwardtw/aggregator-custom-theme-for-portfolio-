@@ -18,9 +18,10 @@
 	if ($checkScreenshot === "" || $daysDiff > 7) {	
 		$url = realpath(__DIR__ . '/..'); //set explicit paths to bin etc.
 		require $url . '/inc/screenshot.php';
-		screenshotThumb($post->ID); //create 300x300 thumbnail
+		makeFeatured($post->ID);
+		//screenshotThumb($post->ID); //create 300x300 thumbnail --NO LONGER NEEDED W FEATURED INTEGRATION
 	}
-;?>
+?>
 
 <article <?php post_class(); ?> id="post-<?php the_ID(); ?>">
 
@@ -29,7 +30,7 @@
 		<?php the_title( '<h1 class="entry-title">', '</h1>' ); ?>
 
 	</header><!-- .entry-header -->
-	<?php echo showScreenshot( $post->ID); ?>
+	<?php //echo showScreenshot( $post->ID); CAN DELETE ?>
 	<?php echo get_the_post_thumbnail( $post->ID, 'large' ); ?>
 	<div class="entry-content">	
 	<?php //GET WP JSON DATA FROM SOURCE URL AND UPDATE TITLE IF IT DOESN'T MATCH
