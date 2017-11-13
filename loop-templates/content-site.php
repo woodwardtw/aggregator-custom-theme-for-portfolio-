@@ -7,6 +7,19 @@
 
  
 ?>
+
+<?php 
+	//check on screenshot if > -7 days then run it ******consider making a function w days and meta field options
+	$now = new DateTime("now");
+	$screenshotDate = new DateTime(get_post_meta($post->ID, 'screenshot-date', true));
+	$diff = $now->diff($screenshotDate);
+	$daysDiff = $diff->format('%R%a');
+	if ($daysDiff < -7) {	
+		$url = realpath(__DIR__ . '/..'); //set explicit paths to bin etc.
+		require $url . '/inc/screenshot.php';
+	}
+;?>
+
 <article <?php post_class(); ?> id="post-<?php the_ID(); ?>">
 
 	<header class="entry-header">
@@ -14,10 +27,9 @@
 		<?php the_title( '<h1 class="entry-title">', '</h1>' ); ?>
 
 	</header><!-- .entry-header -->
-
+	<?php echo showScreenshot( $post->ID); ?>
 	<?php echo get_the_post_thumbnail( $post->ID, 'large' ); ?>
-	<div class="entry-content">
-	
+	<div class="entry-content">	
 	<?php //GET WP JSON DATA FROM SOURCE URL AND UPDATE TITLE IF IT DOESN'T MATCH
 		getAggData(get_the_ID());
 	?>	
@@ -84,9 +96,7 @@
 			'after'  => '</div>',
 		) );
 		?>
-	<?php 
-	$url = realpath(__DIR__ . '/..'); //set explicit paths to bin etc.
-	require $url . '/inc/screenshot.php';?>
+	
 	</div><!-- .entry-content -->
 
 	<footer class="entry-footer">

@@ -5,7 +5,6 @@
 	$remoteSite = get_post_meta( get_the_ID(), 'site-url', true ); //the URL referenced in the post
 	$cleanUrl = preg_replace("(^https?://)", "", $remoteSite ); //remove http or https
 	$cleanUrl = str_replace('/', "_", $cleanUrl); //replace / with _
-	var_dump($cleanUrl);
 
    //basic screenshot pieces	
     use JonnyW\PhantomJs\Client;
@@ -33,4 +32,9 @@
 
     // Send the request
     $client->send($request, $response);
+
+    //set the date of the screenshot
+    $date = date('Y-m-d H:i:s');
+    update_post_meta( get_the_ID(), 'screenshot-date', $date );
+
     ?>

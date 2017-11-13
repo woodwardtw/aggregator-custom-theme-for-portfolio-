@@ -1,6 +1,6 @@
 <?php
 /**
- * aggregate site functions and definitions
+ * georgetown site functions and definitions
  *
  * 
  *
@@ -76,12 +76,12 @@ function create_program_cpt() {
 		'name' => __( 'Programs', 'Post Type General Name', 'textdomain' ),
 		'singular_name' => __( 'Program', 'Post Type Singular Name', 'textdomain' ),
 		'menu_name' => __( 'Programs', 'textdomain' ),
-		'name_admin_bar' => __( 'Site', 'textdomain' ),
+		'name_admin_bar' => __( 'Program', 'textdomain' ),
 		'archives' => __( 'Program Archives', 'textdomain' ),
 		'attributes' => __( 'Program Attributes', 'textdomain' ),
 		'parent_item_colon' => __( 'Parent Program:', 'textdomain' ),
 		'all_items' => __( 'All Programs', 'textdomain' ),
-		'add_new_item' => __( 'Add New Site', 'textdomain' ),
+		'add_new_item' => __( 'Add New Program', 'textdomain' ),
 		'add_new' => __( 'Add New', 'textdomain' ),
 		'new_item' => __( 'New Program', 'textdomain' ),
 		'edit_item' => __( 'Edit Program', 'textdomain' ),
@@ -210,10 +210,17 @@ function getAggData($id){
 		$syndicatedDescription = $data->description;			
 		updateTitle($id,$data);	  		  	
 		updateTags($id,$data);
-		missingResponse($id, 'no-plugin-data');
 	}
-	totalPosts($id);
-	totalPages($id);
+	try {
+		totalPosts($id);
+	} catch (Exception $e) {
+    	echo 'Caught exception: ',  $e->getMessage(), "\n";
+	}
+	try {
+		totalPages($id);
+	} catch (Exception $e) {
+     	echo 'Caught exception: ',  $e->getMessage(), "\n";
+	}
 }
 
 function updateTitle($id,$data){
@@ -233,22 +240,25 @@ function updateTitle($id,$data){
 function updateTags($id,$data){
 	if ($data->ddm_tag){
 		$extra = $data->ddm_tag;
-		$tags = implode(",",$extra); //stringify it 
-		$postTags = wp_get_post_tags($id);	  	
+		$postTags = wp_get_post_tags($id);	  
 		$postTagsArray = [];
 		for ($i = 0; $i < count($postTags); $i++){
 		  	array_push($postTagsArray, $postTags[$i]->name);
 		}
-		if (array_diff($extra,$postTagsArray)>0) {
+		if (count(array_diff($extra,$postTagsArray))>0) {
+				$tags = implode(",",$extra); //stringify it 
 		  		wp_set_post_tags($id, $tags, true );
 		  	}	
+		 } else {
+	 	missingResponse($id, 'no-tags');
 	 }
+
 }
 
 //adds 404 tag to sites that don't respond for filtering purposes (keep the post for archival purposes but remove from active listings via wp query)
 function missingResponse($id, $status){
 	  	//update_post_meta( $id, 'site-status', $status);
-	  	wp_set_post_tags( $id, $status, true );
+	  	wp_set_post_tags( $id, $status, false ); //opted not to reset tags to null but might change back to true . . . 
 }
 
 
@@ -270,8 +280,15 @@ function totalPosts($id){
 	if(is_wp_error( $response ) || $response == 404){ //on failure add tag 404
 		missingResponse($id, '404');
 	} else {
-		$total = $response['headers']['x-wp-total'];
-		update_post_meta( $id, 'total-posts', $total);
+		$total = $response['headers']['x-wp-total'];	
+		if ($total === true){
+			update_post_meta( $id, 'total-posts', $total);
+		}
+		//recent update date for posts
+		$data = json_decode( wp_remote_retrieve_body( $response ) );
+		if ($data === true){
+			update_post_meta( $id, 'recent-update-posts', $data[0]->date );
+		}
 	}
 }
 
@@ -285,6 +302,10 @@ function totalPages($id){
 	} else {
 		$total = $response['headers']['x-wp-total'];
 		update_post_meta( $id, 'total-pages', $total);
+		$data = json_decode( wp_remote_retrieve_body( $response ) );
+		if($data === true){
+			update_post_meta( $id, 'recent-update-pages', $data[0]->date );
+		}
 	}
 }
 
@@ -294,21 +315,62 @@ function aggSiteCategories($id){
 	$siteURL = verifySlash(get_post_meta( $id, 'site-url', true ));	
 	$response = wp_remote_get($siteURL . 'wp-json/wp/v2/categories?orderby=count&per_page=10&order=desc' );
 	if(is_wp_error( $response ) || $response == 404){ //on failure add tag 404
-		//missingResponse($id, '404');
+		missingResponse($id, '404');
 	} else {
 		$categories = '';
 		$data = json_decode( wp_remote_retrieve_body( $response ) );
-		for ($i = 0; $i < sizeof($data); $i++ ){
-			$categories .= '<li><a href="'.$data[$i]->link.'">'.$data[$i]->name.' ('. $data[$i]->count .')</a></li>';
+		if ($data === true) {
+			for ($i = 0; $i < sizeof($data); $i++ ){
+				if ($data[$i]->count>0){//make sure the category is actually in use
+					$categories .= '<li><a href="'.$data[$i]->link.'">'.$data[$i]->name.' ('. $data[$i]->count .')</a></li>';
+				}
+			}
 		}
 		echo '<ul id="agg-categories">'.$categories.'</ul>';
 	}	
 }
 
-//refreshes page to make sure fixed data shows
+//refreshes page 
 function refreshPage(){
    echo '<script>location.reload();</script>';
 }
+
+
+//temporary function to check if screenshot and show if so
+
+function showScreenshot($id){
+	$remoteSite = get_post_meta( $id, 'site-url', true ); //the URL referenced in the post
+	$cleanUrl = preg_replace("(^https?://)", "", $remoteSite ); //remove http or https
+	$cleanUrl = str_replace('/', "_", $cleanUrl); //replace / with _
+	$imgUrl = get_template_directory_uri() . '/screenshots/' . $cleanUrl . '.jpg';
+	$imgPath = get_template_directory()  . '/screenshots/' . $cleanUrl . '.jpg';
+	if (file_exists($imgPath)) {
+		return '<img src="'. $imgUrl .'" class="img-fluid" alt="Screenshot of the site.">';
+	} 
+}
+
+
+/*
+//adds screenshot as featured image
+function makeFeatured($id,$filename){
+	$wp_filetype = wp_check_filetype(basename($filename), null );
+
+	$attachment = array(
+	    'post_mime_type' => $wp_filetype['type'],
+	    'post_title' => $filename,
+	    'post_content' => '',
+	    'post_status' => 'inherit'
+	);
+
+	$attach_id = wp_insert_attachment( $attachment, $uploadfile );
+
+	$imagenew = get_post( $attach_id );
+	$fullsizepath = get_attached_file( $imagenew->ID );
+	$attach_data = wp_generate_attachment_metadata( $attach_id, $fullsizepath );
+	wp_update_attachment_metadata( $attach_id, $attach_data );
+}
+
+*/
 
 /*
 **
@@ -321,4 +383,3 @@ THINGS THAT INVOLVE GETTING THE DATA FROM AFAR --- PROGRAM LEVEL
 //hook into tags from sites custom post type and display under two headings include and exclude
 
 
-//screenshot attempt
