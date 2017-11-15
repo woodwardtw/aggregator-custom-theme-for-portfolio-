@@ -46,7 +46,7 @@
 		// The Loop
 		if ( $the_query->have_posts() ) :
 		while ( $the_query->have_posts() ) : $the_query->the_post();
-		  
+		  the_post_thumbnail( 'large' ); 
 		  echo '<a href="' . get_permalink() . '">';
 		  echo '<h3 class="site-title">';  		  
 		  the_title();	

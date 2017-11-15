@@ -32,7 +32,9 @@
 
 	</header><!-- .entry-header -->
 	<?php //echo showScreenshot( $post->ID); CAN DELETE ?>
-	<?php echo get_the_post_thumbnail( $post->ID, 'large' ); ?>
+	<a href="<?php echo get_post_meta( get_the_ID(), 'site-url', true ); ?>">
+		<?php echo get_the_post_thumbnail( $post->ID, 'large' ); ?>
+	</a>
 	<div class="entry-content">	
 	<?php //GET WP JSON DATA FROM SOURCE URL AND UPDATE TITLE IF IT DOESN'T MATCH
 		getAggData(get_the_ID());
