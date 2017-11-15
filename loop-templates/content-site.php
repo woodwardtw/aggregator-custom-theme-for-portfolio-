@@ -31,7 +31,6 @@
 		<?php the_title( '<h1 class="entry-title">', '</h1>' ); ?>
 
 	</header><!-- .entry-header -->
-	<?php //echo showScreenshot( $post->ID); CAN DELETE ?>
 	<a href="<?php echo get_post_meta( get_the_ID(), 'site-url', true ); ?>">
 		<?php echo get_the_post_thumbnail( $post->ID, 'large' ); ?>
 	</a>
