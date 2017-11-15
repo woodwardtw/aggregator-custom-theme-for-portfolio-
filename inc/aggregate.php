@@ -315,8 +315,10 @@ function totalPosts($id){
 		}
 		//recent update date for posts
 		$data = json_decode( wp_remote_retrieve_body( $response ) );
-		if ($data != ""){
-			update_post_meta( $id, 'recent-update-posts', $data[0]->date );
+		if ($data != ""){ //make sure it's WP
+			if ($data->code != 'rest_no_route'){//make sure it's not an old version of WP
+				update_post_meta( $id, 'recent-update-posts', $data[0]->date );
+			}
 		}
 	}
 }
@@ -332,8 +334,10 @@ function totalPages($id){
 		$total = $response['headers']['x-wp-total'];
 		update_post_meta( $id, 'total-pages', $total);
 		$data = json_decode( wp_remote_retrieve_body( $response ) );
-		if($data != ""){
-			update_post_meta( $id, 'recent-update-pages', $data[0]->date );
+		if($data != ""){//make sure it's WP
+			if ($data->code != 'rest_no_route'){ //make sure it's not an old version of WP
+				update_post_meta( $id, 'recent-update-pages', $data[0]->date );
+			}
 		}
 	}
 }
