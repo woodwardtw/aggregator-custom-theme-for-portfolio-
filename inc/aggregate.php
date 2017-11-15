@@ -208,7 +208,6 @@ function getAggData($id){
 	} else {
 	$data = json_decode( wp_remote_retrieve_body( $response ) ); //on success update post
 		$syndicatedDescription = $data->description;			
-		updateTitle($id,$data);	  		  	
 		updateTags($id,$data);
 	}
 	try {
@@ -220,22 +219,52 @@ function getAggData($id){
 		totalPages($id);
 	} catch (Exception $e) {
      	echo 'Caught exception: ',  $e->getMessage(), "\n";
+	} try {
+		updateTitle($id,$data,$siteURL);	  		  	
+	} catch (Exception $e) {
+     	echo 'Caught exception: ',  $e->getMessage(), "\n";
 	}
 }
 
-function updateTitle($id,$data){
-	$syndicatedTitle = $data->name;
-	$currentTitle = get_the_title();
-	if ($currentTitle != $syndicatedTitle){
-		$the_post = array(
-		    'ID'           => $id,
-		    'post_title'   => $data->name,
-		    'post_name' => '', //passes empty string to force regeneration of permalink based on title change
-		  		);				
-		wp_update_post( $the_post );// Update the post in the database
-		refreshPage();
+function updateTitle($id,$data,$url){
+	if ($data->name !=""){
+		$syndicatedTitle = $data->name;
+		$currentTitle = get_the_title();
+		if ($currentTitle != $syndicatedTitle){
+			$the_post = array(
+			    'ID'           => $id,
+			    'post_title'   => $data->name,
+			    'post_name' => '', //passes empty string to force regeneration of permalink based on title change
+			  		);				
+			wp_update_post( $the_post );// Update the post in the database
+			refreshPage();
+		}
+	} else {
+        $syndicatedTitle = wptexturize(get_title($url));
+        $currentTitle = get_the_title();      
+		if ($currentTitle != $syndicatedTitle){
+			$the_post = array(
+			    'ID'           => $id,
+			    'post_title'   => $syndicatedTitle,
+			    'post_name' => '', //passes empty string to force regeneration of permalink based on title change
+			  		);				
+			wp_update_post( $the_post );// Update the post in the database
+			refreshPage();
+		}
 	}
 }
+
+
+//from https://stackoverflow.com/questions/4348912/get-title-of-website-via-link
+function get_title($url){
+  $str = file_get_contents($url);
+  if(strlen($str)>0){
+    $str = trim(preg_replace('/\s+/', ' ', $str)); // supports line breaks inside <title>
+    preg_match("/\<title\>(.*)\<\/title\>/i",$str,$title); // ignore case
+    return $title[1];
+  }
+}
+
 
 function updateTags($id,$data){
 	if ($data->ddm_tag){
@@ -286,7 +315,7 @@ function totalPosts($id){
 		}
 		//recent update date for posts
 		$data = json_decode( wp_remote_retrieve_body( $response ) );
-		if ($data === true){
+		if ($data != ""){
 			update_post_meta( $id, 'recent-update-posts', $data[0]->date );
 		}
 	}
@@ -303,7 +332,7 @@ function totalPages($id){
 		$total = $response['headers']['x-wp-total'];
 		update_post_meta( $id, 'total-pages', $total);
 		$data = json_decode( wp_remote_retrieve_body( $response ) );
-		if($data === true){
+		if($data != ""){
 			update_post_meta( $id, 'recent-update-pages', $data[0]->date );
 		}
 	}
