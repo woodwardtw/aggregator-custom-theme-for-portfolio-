@@ -9133,6 +9133,9 @@ a.skip-link {
 .gallery-caption {
   display: block; }
 
+.synd-post {
+  display: none; }
+
 /*
 * Use existing Bootstrap 4 classes and
 * variables to extend - override CF7 style

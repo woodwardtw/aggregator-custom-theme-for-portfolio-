@@ -23,6 +23,7 @@
 	}
 ?>
 
+
 <article <?php post_class(); ?> id="post-<?php the_ID(); ?>">
 
 	<header class="entry-header">
@@ -69,7 +70,9 @@
 		            console.log(data); //dumps the data to the console to check if the callback is made successfully.
 		            	jQuery.each(data, function(index, item) {
 			            	try {
-					            jQuery('#'+destination).append('<h4><a href="'+item.link+'">'+item.title.rendered+'</a></h4><div class="post-content">' + item.content.rendered + '</div>');//adds an h4 element with the title to the div with id posts}
+					            jQuery('#'+destination).append('<div class="synd-post"><h4 class="synd-post-title"><a href="'+item.link+'">'+item.title.rendered+'</a></h4><div class="synd-post-content">' + item.content.rendered + '</div></div>');//adds an h4 element with the title to the div with id posts}
+					             jQuery('.synd-post').fadeIn(3000);//animating
+
 					            } catch (err) {
 				        		console.log(err);
 				        	}
