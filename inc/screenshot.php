@@ -11,16 +11,19 @@
 
     $client = Client::getInstance();
     $client->getEngine()->setPath($url . '/bin/phantomjs');
-	
-    $width  = 1200;
-    $height = 800;
+
+    $width  = 1366;
+    $height = 768;
     $top    = 0;
     $left   = 0;
     
     /** 
      * @see JonnyW\PhantomJs\Http\CaptureRequest
      **/
+    $delay = 1; // 1 second rendering time
+
     $request = $client->getMessageFactory()->createCaptureRequest($remoteSite, 'GET');
+    $request->setDelay($delay);
     $request->setOutputFile($url . '/screenshots/'. $cleanUrl . '.jpg');
     $request->setViewportSize($width, $height);
     $request->setCaptureDimensions($width, $height, $top, $left);
