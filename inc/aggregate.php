@@ -204,7 +204,7 @@ function getAggData($id){
 	$siteURL = verifySlash(get_post_meta( $id, 'site-url', true ));	
 	$response = wp_remote_get($siteURL . 'wp-json/' );	
 	if(is_wp_error( $response ) || $response['response']['code'] != 200){ //on failure add tag 404
-		missingResponse($id, '404');
+		missingResponse($id, 'not-modern-wordpress');
 	} else {
 	$data = json_decode( wp_remote_retrieve_body( $response ) ); //on success update post
 		$syndicatedDescription = $data->description;			
@@ -279,7 +279,7 @@ function updateTags($id,$data){
 		  		wp_set_post_tags($id, $tags, true );
 		  	}	
 		 } else {
-	 	missingResponse($id, 'no-tags');
+	 	missingResponse($id, 'no-base-tags');
 	 }
 
 }
@@ -307,7 +307,7 @@ function totalPosts($id){
 	$siteURL = verifySlash(get_post_meta( $id, 'site-url', true ));	
 	$response = wp_remote_get($siteURL . 'wp-json/wp/v2/posts?per_page=1' );	
 	if(is_wp_error( $response ) || $response == 404){ //on failure add tag 404
-		missingResponse($id, '404');
+		missingResponse($id, 'no-posts');
 	} else {
 		$total = $response['headers']['x-wp-total'];	
 		if ($total){
@@ -329,7 +329,7 @@ function totalPages($id){
 	$siteURL = verifySlash(get_post_meta( $id, 'site-url', true ));	
 	$response = wp_remote_get($siteURL . 'wp-json/wp/v2/pages?per_page=1' );	
 	if(is_wp_error( $response ) || $response == 404){ //on failure add tag 404
-		missingResponse($id, '404');
+		missingResponse($id, 'no-pages');
 	} else {
 		$total = $response['headers']['x-wp-total'];
 		update_post_meta( $id, 'total-pages', $total);
@@ -348,7 +348,7 @@ function aggSiteCategories($id){
 	$siteURL = verifySlash(get_post_meta( $id, 'site-url', true ));	
 	$response = wp_remote_get($siteURL . 'wp-json/wp/v2/categories?orderby=count&per_page=10&order=desc' );
 	if(is_wp_error( $response ) || $response == 404){ //on failure add tag 404
-		missingResponse($id, '404');
+		missingResponse($id, 'no-categories');
 	} else {
 		$categories = '';
 		$data = json_decode( wp_remote_retrieve_body( $response ) );
@@ -369,7 +369,7 @@ function refreshPage(){
 }
 
 
-//do the featured image gymnastics
+//do the screenshot to featured image gymnastics
 
 function makeFeatured($id){
 	$remoteSite = get_post_meta( $id, 'site-url', true ); //the URL referenced in the post
@@ -380,36 +380,38 @@ function makeFeatured($id){
 
     $upload_dir = wp_upload_dir();
     if (file_exists($img_url)) {
-    	$image_data = file_get_contents($img_url);
+    	$image_data = file_get_contents($img_url); 
+	    $filename = basename($img_url);
+	    if(wp_mkdir_p($upload_dir['path'])){
+	    	$file = $upload_dir['path'] . '/' . $filename;
+	    }
+	    else{
+	    	$file = $upload_dir['basedir'] . '/' . $filename;
+		}
+	    file_put_contents($file, $image_data);
 
-    
-    $filename = basename($img_url);
-    if(wp_mkdir_p($upload_dir['path']))     $file = $upload_dir['path'] . '/' . $filename;
-    else                                    $file = $upload_dir['basedir'] . '/' . $filename;
-    file_put_contents($file, $image_data);
-
-    $wp_filetype = wp_check_filetype($filename, null );
-    $attachment = array(
-        'post_mime_type' => $wp_filetype['type'],
-        'post_title' => sanitize_file_name($filename),
-        'post_content' => '',
-        'post_status' => 'inherit'
-    );
-    $attach_id = wp_insert_attachment( $attachment, $file, $id );
-    require_once(ABSPATH . 'wp-admin/includes/image.php');
-    $attach_data = wp_generate_attachment_metadata( $attach_id, $file );
-    $res1= wp_update_attachment_metadata( $attach_id, $attach_data );
-    $res2= set_post_thumbnail( $id, $attach_id );
-   
-    	unlink($img_url);
+	    $wp_filetype = wp_check_filetype($filename, null );
+	    $attachment = array(
+	        'post_mime_type' => $wp_filetype['type'],
+	        'post_title' => sanitize_file_name($filename),
+	        'post_content' => '',
+	        'post_status' => 'inherit'
+	    );
+	    $attach_id = wp_insert_attachment( $attachment, $file, $id );
+	    require_once(ABSPATH . 'wp-admin/includes/image.php');
+	    $attach_data = wp_generate_attachment_metadata( $attach_id, $file );
+	    $res1= wp_update_attachment_metadata( $attach_id, $attach_data );
+	    $res2= set_post_thumbnail( $id, $attach_id );
+	   
+	   	unlink($img_url); //deletes screenshot
     }
 }
 
-//throw all meta fields for sites into the REST API
+//PUT CUSTOM FIELDS into the REST API
 add_action( 'rest_api_init', 'create_api_posts_meta_field' );
  
 function create_api_posts_meta_field() {
-    register_rest_field( 'site', 'post-meta-fields', array(
+    register_rest_field( 'site', 'synd-site-data', array(
            'get_callback'    => 'get_post_meta_for_api',
            'schema'          => null,
         )
