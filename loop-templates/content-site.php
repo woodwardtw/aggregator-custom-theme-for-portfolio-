@@ -43,15 +43,30 @@
 		<?php the_content(); ?>
 		<?php aggSiteCategories($post->ID);?>
 		<div class="row"><!--show site content via api-->
-			<div id="posts" class="col-md-6">
-				<h2>Posts</h2>
-				<?php  echo 'Total Posts: ' .get_post_meta($post->ID, 'total-posts', true);?>
-			</div>
+			<?php
+				$synd_posts = get_post_meta($post->ID, 'total-posts', true);
+				$synd_pages = get_post_meta($post->ID, 'total-pages', true);
+				if (($synd_pages + $synd_posts) > 2){
+					$col = 6;
+				} else {
+					$col = 8;
+				}
 
-			<div id="pages" class="col-md-6">
-				<h2>Pages</h2>
-				<?php  echo 'Total Pages: ' .get_post_meta($post->ID, 'total-pages', true);?>
-			</div>
+				if ($synd_posts > 0){  
+					echo '<div id="posts" class="col-md-'.$col.'">';
+					echo '<h2>Posts</h2>';
+					echo 'Total Posts: ' .get_post_meta($post->ID, 'total-posts', true);
+					echo '</div>';
+				}
+					
+				if ($synd_pages > 0){  
+					echo '<div id="pages" class="col-md-'.$col.'">';
+					echo '<h2>Pages</h2>';
+					echo 'Total Pages: ' .get_post_meta($post->ID, 'total-pages', true);
+					echo '</div>';
+				}
+			?>
+			
 		</div>	
 		<script>
 		var posts = <?php echo '"' . verifySlash(get_post_meta( get_the_ID(), 'site-url', true )) . 'wp-json/wp/v2/posts?_embed&per_page=10";';?>
