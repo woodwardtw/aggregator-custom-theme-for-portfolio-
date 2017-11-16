@@ -302,7 +302,7 @@ function verifySlash($url){
 }
 
 
-//gets total posts and allows wp query vs value or a sort to show more posts up front
+//gets total posts and allows wp query vs value or a sort to show more posts up front & adds to REST API
 function totalPosts($id){
 	$siteURL = verifySlash(get_post_meta( $id, 'site-url', true ));	
 	$response = wp_remote_get($siteURL . 'wp-json/wp/v2/posts?per_page=1' );	
@@ -369,32 +369,7 @@ function refreshPage(){
 }
 
 
-//temporary function to check if screenshot and show if so
-
-function showScreenshot($id){
-	$remoteSite = get_post_meta( $id, 'site-url', true ); //the URL referenced in the post
-	$cleanUrl = preg_replace("(^https?://)", "", $remoteSite ); //remove http or https
-	$cleanUrl = str_replace('/', "_", $cleanUrl); //replace / with _
-	$imgUrl = get_template_directory_uri() . '/screenshots/' . $cleanUrl . '.jpg';
-	$imgPath = get_template_directory()  . '/screenshots/' . $cleanUrl . '.jpg';
-	if (file_exists($imgPath)) {
-		return '<img src="'. $imgUrl .'" class="img-fluid" alt="Screenshot of the site.">';
-	} 
-}
-
-function screenshotThumb($id){
-	$remoteSite = get_post_meta( $id, 'site-url', true ); //the URL referenced in the post
-	$cleanUrl = preg_replace("(^https?://)", "", $remoteSite ); //remove http or https
-	$cleanUrl = str_replace('/', "_", $cleanUrl); //replace / with _
-	$imgPath = get_template_directory()  . '/screenshots/' . $cleanUrl . '.jpg';
-
-	$image = wp_get_image_editor( $imgPath );
-	if ( ! is_wp_error( $image ) ) {
-    	$image->resize( 300, 300, true );
-    	$image->save( get_template_directory()  . '/screenshots/' . $cleanUrl . '300x300.jpg');
-	}
-}
-
+//do the featured image gymnastics
 
 function makeFeatured($id){
 	$remoteSite = get_post_meta( $id, 'site-url', true ); //the URL referenced in the post
@@ -428,6 +403,27 @@ function makeFeatured($id){
    
     	unlink($img_url);
     }
+}
+
+//throw all meta fields for sites into the REST API
+add_action( 'rest_api_init', 'create_api_posts_meta_field' );
+ 
+function create_api_posts_meta_field() {
+ 
+    // register_rest_field ( 'name-of-post-type', 'name-of-field-to-return', array-of-callbacks-and-schema() )
+    register_rest_field( 'site', 'post-meta-fields', array(
+           'get_callback'    => 'get_post_meta_for_api',
+           'schema'          => null,
+        )
+    );
+}
+ 
+function get_post_meta_for_api( $object ) {
+    //get the id of the post object array
+    $post_id = $object['id'];
+ 
+    //return the post meta
+    return get_post_meta( $post_id );
 }
 
 
