@@ -9134,7 +9134,12 @@ a.skip-link {
   display: block; }
 
 .synd-post {
-  display: none; }
+  display: none;
+  max-width: 100%; }
+
+.synd-post iframe {
+  max-width: 100%;
+  height: auto; }
 
 /*
 * Use existing Bootstrap 4 classes and

@@ -227,20 +227,20 @@ function getAggData($id){
 }
 
 function updateTitle($id,$data,$url){
-	if ($data->name !=""){
-		$syndicatedTitle = $data->name;
-		$currentTitle = get_the_title();
-		if ($currentTitle != $syndicatedTitle){
+	if ($data->name != null){
+		$syndicatedTitle = wptexturize($data->name);		
+		$currentTitle = get_the_title();		
+		if ( $currentTitle != $syndicatedTitle ){
 			$the_post = array(
 			    'ID'           => $id,
-			    'post_title'   => $data->name,
+			    'post_title'   => $syndicatedTitle,
 			    'post_name' => '', //passes empty string to force regeneration of permalink based on title change
 			  		);				
 			wp_update_post( $the_post );// Update the post in the database
-			refreshPage();
+			refreshPage();			
 		}
 	} else {
-        $syndicatedTitle = wptexturize(get_title($url));
+        $syndicatedTitle = wptexturize(get_title_element($url));
         $currentTitle = get_the_title();      
 		if ($currentTitle != $syndicatedTitle){
 			$the_post = array(
@@ -256,12 +256,14 @@ function updateTitle($id,$data,$url){
 
 
 //from https://stackoverflow.com/questions/4348912/get-title-of-website-via-link
-function get_title($url){
+function get_title_element($url){
   $str = file_get_contents($url);
   if(strlen($str)>0){
     $str = trim(preg_replace('/\s+/', ' ', $str)); // supports line breaks inside <title>
     preg_match("/\<title\>(.*)\<\/title\>/i",$str,$title); // ignore case
     return $title[1];
+  } else {
+  	return "No Title";
   }
 }
 
@@ -309,15 +311,19 @@ function totalPosts($id){
 	if(is_wp_error( $response ) || $response == 404){ //on failure add tag 404
 		missingResponse($id, 'no-posts');
 	} else {
-		$total = $response['headers']['x-wp-total'];	
-		if ($total){
+		$total = $response['headers']['x-wp-total'];
+		if ($total > 0){
 			update_post_meta( $id, 'total-posts', $total);
+		} else {
+			update_post_meta( $id, 'total-posts', 0); //endpoint exists but no posts are there
 		}
 		//recent update date for posts
 		$data = json_decode( wp_remote_retrieve_body( $response ) );
 		if ($data != ""){ //make sure it's WP
-			if ($data->code === false || $data->code != 'rest_no_route'){//make sure it's not an old version of WP
-				update_post_meta( $id, 'recent-update-posts', $data[0]->date );
+			if ($data->code != 'rest_no_route' || $data->code != null){//make sure it's not an old version of WP
+				update_post_meta( $id, 'recent-update-posts', $data[0]->date);
+			} else {
+				update_post_meta( $id, 'recent-update-posts', 'no posts' );
 			}
 		}
 	}
@@ -332,7 +338,11 @@ function totalPages($id){
 		missingResponse($id, 'no-pages');
 	} else {
 		$total = $response['headers']['x-wp-total'];
-		update_post_meta( $id, 'total-pages', $total);
+		if($total > 0){
+			update_post_meta( $id, 'total-pages', $total);
+		} else {
+			update_post_meta( $id, 'total-pages', 0);			
+		}
 		$data = json_decode( wp_remote_retrieve_body( $response ) );
 		if($data != ""){//make sure it's WP
 			if ($data->code != 'rest_no_route'){ //make sure it's not an old version of WP

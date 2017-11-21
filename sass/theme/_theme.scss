@@ -3,4 +3,10 @@
 //syndicated posts and pages
 .synd-post {
     display: none;
+    max-width: 100%;
+}
+
+.synd-post iframe {
+    max-width: 100%;
+    height: auto;
 }
